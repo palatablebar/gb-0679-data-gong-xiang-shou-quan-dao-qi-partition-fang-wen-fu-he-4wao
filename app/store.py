@@ -7,6 +7,7 @@ def connect():
     db=sqlite3.connect(DATA_DIR/"records.db",timeout=20)
     db.execute("PRAGMA journal_mode=WAL")
     db.execute("CREATE TABLE IF NOT EXISTS runs (id TEXT PRIMARY KEY,payload TEXT NOT NULL,version INTEGER NOT NULL DEFAULT 1,decision TEXT NOT NULL DEFAULT '待复核')")
+    db.execute("CREATE TABLE IF NOT EXISTS retirements (migration_id TEXT PRIMARY KEY,alias TEXT NOT NULL,resource TEXT NOT NULL,retired_at TEXT NOT NULL,payload TEXT NOT NULL,active INTEGER NOT NULL DEFAULT 1,created_at TEXT NOT NULL)")
     return db
 def save(run_id,payload):
     with connect() as db:

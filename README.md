@@ -20,10 +20,13 @@ docker compose exec -T app pytest -q
 - 5. 分区判定：`/partitions`，`/api/partitions`。
 - 6. 访问对账：`/audit`，`/api/audit`。
 - 7. 审计归档：`/seals`，`/api/seals`。
+- 8. 别名退役：`/retirements`，`/api/retirements`。
 
 ## 核心规则
 
 拒绝规则优先于允许，授权必须同时命中资源、分区和生效窗；显式拒绝不得被宽授权覆盖。
+
+资源别名可退役。裁决：保留历史版本并让新访问失效——历史访问仍按退役前归属解释，退役时刻起借用该别名的访问隔离，归属变化同步影响授权与封存资格。每次退役形成唯一迁移结果，说明退役前后归属、受影响批次与封存资格；未说明归属差异的批次不能封存；同一退役重试只刷新既有结果不新增；切换失败保留旧迁移结果。
 
 ## 演示
 
@@ -36,7 +39,9 @@ docker compose exec -T app pytest -q
 
 输入列见 `docs/DATA-DICTIONARY.md`。项目包含dirty.csv、clean.csv、legacy.csv，统一走实际导入路径。上传限制4MB，拒绝不带时区的时间。业务键按字符串保留，Decimal参与计算，空值不会当零。
 
-`POST /api/runs` 接收sample或csv；`GET /api/runs`返回历史批次；`POST /api/runs/<id>/review`需要version与decision；`GET /api/runs/<id>/archive`返回唯一证据导出。
+`POST /api/runs` 接收sample或csv；`GET /api/runs`返回历史批次；`POST /api/runs/<id>/review`需要version与decision；`GET /api/runs/<id>/archive`返回唯一证据导出，批次未说明归属差异时返回409。
+
+`POST /api/retirements` 接收alias与retired_at，返回该次退役的唯一迁移结果；`GET /api/retirements`列出全部迁移结果；`GET /api/retirements/<id>`返回单条。
 
 ## 范围
 

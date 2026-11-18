@@ -13,6 +13,7 @@
 | M5 分区判定 | 查看并运行分区判定 | `/api/partitions` | `app/modules/m5_partitions/rules.py` | `tests/test_m5.py` |
 | M6 访问对账 | 查看并运行访问对账 | `/api/audit` | `app/modules/m6_audit/rules.py` | `tests/test_m6.py` |
 | M7 审计归档 | 查看并运行审计归档 | `/api/seals` | `app/modules/m7_seals/rules.py` | `tests/test_m7.py` |
+| M8 别名退役 | 退役资源别名并查看迁移结果 | `/api/retirements` | `app/modules/m8_retirements/rules.py` | `tests/test_m8.py` |
 
 ## 陷阱登记
 
@@ -29,6 +30,10 @@
 | TRAP-07 | 上游结果空值 | 误报拒绝 | 隔离缺失 | `app/values.py` | `tests/test_m3.py::test_real_missing_decision_not_zero` |
 | TRAP-19 | 允许与拒绝重叠 | 后写覆盖 | 拒绝优先且排序证据 | `app/modules/m4_conflicts/rules.py` | `tests/test_m4.py::test_deny_priority_counterexample` |
 | TRAP-23 | 授权到期点 | 多放行一次 | 半开生效窗 | `app/modules/m3_grants/rules.py` | `tests/test_m3.py::test_expiry_endpoint_excluded` |
+| TRAP-27 | 退役后借用别名 | 新旧归属混算 | 历史保留归属，退役时刻起隔离 | `app/modules/m2_resources/rules.py` | `tests/test_m8.py::test_retired_alias_blocks_new_access_keeps_history` |
+| TRAP-28 | 同一退役重试 | 迁移结果重复 | 确定性ID幂等 upsert，不新增 | `app/retirements.py` | `tests/test_m8.py::test_retire_forms_unique_migration` |
+| TRAP-29 | 归属切换失败 | 旧迁移结果丢失 | 单事务原子切换，失败回滚 | `app/retirements.py` | `tests/test_m8.py::test_failed_switch_preserves_old_migration` |
+| TRAP-30 | 归属差异未说明 | 批次误封存 | 封存资格联动，归档导出409 | `app/retirements.py` | `tests/test_m8.py::test_unexplained_batch_cannot_seal` |
 
 ## 对账规则
 

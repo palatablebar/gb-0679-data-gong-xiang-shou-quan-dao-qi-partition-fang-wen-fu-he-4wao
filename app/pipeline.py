@@ -16,7 +16,8 @@ def load_sample(name):
     if name not in {"dirty.csv","clean.csv","legacy.csv"}: raise DomainError("BAD_SAMPLE","样例不存在",404)
     return (ROOT/"sample_data"/name).read_bytes()
 def calculate(raw,params=None,stop=6):
-    params=params or {};started=time.monotonic();context={"parameters":params,"raw":raw,"quarantine":[]};stages=[];rows=[]
+    params=params or {};started=time.monotonic();run_id=digest(raw,params)[:20]
+    context={"parameters":params,"raw":raw,"quarantine":[],"run_id":run_id};stages=[];rows=[]
     for index,stage in enumerate(STAGES[:stop+1]):
         result=stage(raw if index==0 else rows,context)
         result=scalar(result);rows=result["rows"]
@@ -25,7 +26,7 @@ def calculate(raw,params=None,stop=6):
         result["cumulative_quarantine"]=list(context["quarantine"])
         context[MODULES[index][0]]=result
         stages.append(result)
-    return {"run_id":digest(raw,params)[:20],"stages":stages,"manifest":manifest(raw,params,started),"parameters":params}
+    return {"run_id":run_id,"stages":stages,"manifest":manifest(raw,params,started),"parameters":params}
 def execute(raw,params=None):
     result=calculate(raw,params);return store.save(result["run_id"],result)
 def stage_preview(index,payload):
